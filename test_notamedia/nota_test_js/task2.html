@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Table</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        .error-message {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container mt-5">
+    <h1>Data Table</h1>
+    <button id="addEntryBtn" class="btn btn-primary mb-3">Add New Entry</button>
+    <div id="newEntryForm" class="mb-3" style="display: none;">
+        <input type="text" id="newEntryName" class="form-control mb-2" placeholder="Enter name">
+        <button id="sendNewEntryBtn" class="btn btn-success">Send</button>
+        <div id="newEntryError" class="error-message"></div>
+    </div>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Date Time</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="dataTable">
+            <!-- Data rows will be appended here -->
+        </tbody>
+    </table>
+    <div id="errorMessage" class="error-message"></div>
+</div>
+
+<script>
+$(document).ready(function() {
+    let data = [
+        { id: 1, name: "John Doe", datetime: "2024-01-01 10:00:00" },
+        { id: 2, name: "Jane Smith", datetime: "2024-01-02 11:00:00" }
+    ]; // Mock data array
+    let nextId = 3; // Mock ID counter
+
+    // Function to display data in the table
+    function displayData() {
+        $('#dataTable').empty();
+        data.forEach(item => {
+            $('#dataTable').append(`
+                <tr data-id="${item.id}">
+                    <td>${item.id}</td>
+                    <td><span class="name-text">${item.name}</span><input type="text" class="edit-name form-control" value="${item.name}" style="display: none;"></td>
+                    <td>${item.datetime}</td>
+                    <td>
+                        <button class="btn btn-warning editBtn">Edit</button>
+                        <button class="btn btn-success saveBtn" style="display: none;">Save</button>
+                        <button class="btn btn-danger deleteBtn">Delete</button>
+                    </td>
+                </tr>
+            `);
+        });
+    }
+
+    // Function to show error message
+    function showError(message) {
+        $('#errorMessage').text(message).show().fadeOut(3000);
+    }
+
+    // Click handler to show new entry form
+    $('#addEntryBtn').click(function() {
+        $('#newEntryForm').toggle();
+    });
+
+    // Click handler to send new entry
+    $('#sendNewEntryBtn').click(function() {
+        const name = $('#newEntryName').val().trim();
+        if (name.length === 0) {
+            $('#newEntryError').text('Name cannot be empty').show().fadeOut(3000);
+            return;
+        }
+
+        // Mock backend request
+        $.ajax({
+            url: "/mock_add_entry",
+            method: "POST",
+            data: { name: name },
+            success: function(response) {
+                const newEntry = { id: nextId++, name: name, datetime: new Date().toLocaleString() };
+                data.push(newEntry);
+                displayData();
+                $('#newEntryName').val('');
+                $('#newEntryForm').hide();
+                $('#newEntryError').hide();
+            },
+            error: function() {
+                $('#newEntryError').text('Failed to add entry').show();
+            }
+        });
+    });
+
+    // Click handler to delete entry
+    $(document).on('click', '.deleteBtn', function() {
+        const id = $(this).closest('tr').data('id');
+        // Mock backend request
+        $.ajax({
+            url: "/mock_delete_entry",
+            method: "POST",
+            data: { id: id },
+            success: function(response) {
+                data = data.filter(item => item.id !== id);
+                displayData();
+            },
+            error: function() {
+                showError('Failed to delete entry');
+            }
+        });
+    });
+
+    // Click handler to edit entry
+    $(document).on('click', '.editBtn', function() {
+        const $row = $(this).closest('tr');
+        $row.find('.name-text').hide();
+        $row.find('.edit-name').show();
+        $row.find('.editBtn').hide();
+        $row.find('.saveBtn').show();
+    });
+
+    // Click handler to save edited entry
+    $(document).on('click', '.saveBtn', function() {
+        const $row = $(this).closest('tr');
+        const id = $row.data('id');
+        const newName = $row.find('.edit-name').val().trim();
+        
+        if (newName.length === 0) {
+            showError('Name cannot be empty');
+            return;
+        }
+
+        // Mock backend request
+        $.ajax({
+            url: "/mock_edit_entry",
+            method: "POST",
+            data: { id: id, name: newName },
+            success: function(response) {
+                const entry = data.find(item => item.id === id);
+                entry.name = newName;
+                displayData();
+            },
+            error: function() {
+                showError('Failed to edit entry');
+            }
+        });
+    });
+
+    // Initial display of data
+    displayData();
+});
+</script>
+
+</body>
+</html>

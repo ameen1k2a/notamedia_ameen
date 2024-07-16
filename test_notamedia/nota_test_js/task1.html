@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Swap</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 50px;
+        }
+        .swap-button {
+            margin: 5px 0;
+            width: 100px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="button-container">
+        <button class="btn btn-primary swap-button">1</button>
+        <button class="btn btn-primary swap-button">2</button>
+        <button class="btn btn-primary swap-button">3</button>
+        <!-- <button class="btn btn-primary swap-button">4</button>
+        <button class="btn btn-primary swap-button">5</button> -->
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // Function to swap two elements
+    function swapElements($elem1, $elem2) {
+        var temp = $('<span>').hide(); // Create a temporary placeholder element
+        $elem1.before(temp);
+        $elem2.before($elem1);
+        temp.before($elem2);
+        temp.remove(); // Remove the temporary placeholder element
+    }
+
+    // Event handler for button click
+    $('.swap-button').click(function() {
+        var $current = $(this); // The button that was clicked
+        var $prev = $current.prev('.swap-button'); // The upper neighbor button
+        var $next = $current.next('.swap-button'); // The lower neighbor button
+
+        if ($prev.length) {
+            // If there is an upper neighbor, swap with it
+            swapElements($current, $prev);
+        } else if ($next.length) {
+            // If no upper neighbor, but there is a lower neighbor, swap with it
+            swapElements($current, $next);
+        }
+    });
+});
+</script>
+
+</body>
+</html>
